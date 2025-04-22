@@ -74,12 +74,21 @@ async def input_loop(websocket, input_win, message_win, lock, message_buffer, us
 
 
 async def chat_ui(stdscr, host, port):
+    curses.start_color()
+    curses.use_default_colors()
+    stdscr.bkgd(" ", curses.color_pair(0))
+    stdscr.refresh()
+
     curses.curs_set(0)
     stdscr.clear()
     height, width = stdscr.getmaxyx()
     username = await get_username(stdscr)
     message_win = curses.newwin(height - 2, width, 0, 0)
     input_win = curses.newwin(2, width, height - 2, 0)
+
+    message_win.bkgd(" ", curses.color_pair(0))
+    input_win.bkgd(" ", curses.color_pair(0))
+
     lock = asyncio.Lock()
     message_buffer = []
     uri = f"ws://{host}:{port}"
