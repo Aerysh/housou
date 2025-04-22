@@ -82,30 +82,36 @@ async def chat_ui(stdscr, host, port):
     curses.curs_set(0)
     stdscr.clear()
     height, width = stdscr.getmaxyx()
-    username = await get_username(stdscr)
+
     message_win = curses.newwin(height - 2, width, 0, 0)
     input_win = curses.newwin(2, width, height - 2, 0)
-
     message_win.bkgd(" ", curses.color_pair(0))
     input_win.bkgd(" ", curses.color_pair(0))
 
     lock = asyncio.Lock()
     message_buffer = []
     uri = f"ws://{host}:{port}"
-    async with websockets.connect(uri) as websocket:
-        async with lock:
-            message_win.erase()
-            message_win.addstr(0, 0, f"Connected to server as {username}.")
-            message_win.refresh()
-        recv_task = asyncio.create_task(
-            receive_messages(websocket, message_win, lock, message_buffer)
-        )
-        input_task = asyncio.create_task(
-            input_loop(
-                websocket, input_win, message_win, lock, message_buffer, username
+    try:
+        async with websockets.connect(uri) as websocket:
+            username = await get_username(stdscr)
+            async with lock:
+                message_win.erase()
+                message_win.addstr(0, 0, f"Connected to server as {username}.")
+                message_win.refresh()
+            recv_task = asyncio.create_task(
+                receive_messages(websocket, message_win, lock, message_buffer)
             )
-        )
-        await asyncio.gather(recv_task, input_task)
+            input_task = asyncio.create_task(
+                input_loop(
+                    websocket, input_win, message_win, lock, message_buffer, username
+                )
+            )
+            await asyncio.gather(recv_task, input_task)
+    except Exception as e:
+        stdscr.erase()
+        stdscr.addstr(0, 0, f"Error: {e}")
+        stdscr.refresh()
+        await asyncio.sleep(2)
 
 
 def run_client(host, port):
