@@ -48,6 +48,17 @@ async def input_loop(websocket, input_win, message_win, lock, message_buffer, us
         msg = msg_bytes.decode("utf-8").strip()
         curses.curs_set(0)
         if msg:
+            if msg.lower() == "/quit":
+                disconnect_msg = "You have disconnected."
+                async with lock:
+                    message_buffer.append(disconnect_msg)
+                    message_win.erase()
+                    max_y, max_x = message_win.getmaxyx()
+                    for idx, m in enumerate(message_buffer[-max_y:]):
+                        message_win.addstr(idx, 0, m[: max_x - 1])
+                    message_win.refresh()
+                await websocket.close()
+                break
             full_msg = f"{username}: {msg}"
             async with lock:
                 message_buffer.append(full_msg)
