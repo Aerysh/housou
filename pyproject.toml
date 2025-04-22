@@ -8,6 +8,8 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "asyncio (>=3.4.3,<4.0.0)",
+    "websockets (>=15.0.1,<16.0.0)"
 ]
 
 [tool.poetry]
@@ -17,3 +19,7 @@ packages = [{include = "housou", from = "src"}]
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.poetry.scripts]
+housou = "housou.core.cli:main"
